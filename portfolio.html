@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>艺术家个人主页</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+
+        #editor-toolbar {
+            display: none;
+            padding: 16px;
+            margin: 20px 0;
+            background: #eeeeee;
+        }
+
+        .work {
+            padding: 30px;
+            margin-top: 20px;
+            background: #dddddd;
+        }
+
+        body.editing .work {
+            outline: 2px dashed #555555;
+        }
+    </style>
+    <script src="js/portfolio.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <h1>艺术家个人主页</h1>
+        <p>这里展示个人介绍与作品。</p>
+    </header>
+
+    <button id="enter-edit">进入编辑模式</button>
+    <button id="exit-edit" hidden>退出编辑模式</button>
+
+    <section id="editor-toolbar" aria-label="编辑工具栏">
+        <strong>编辑工具栏</strong>
+        <p>后续将在这里添加图形创建、颜色和属性工具。</p>
+    </section>
+
+    <main id="portfolio">
+        <h2>我的作品</h2>
+
+        <div class="work">
+            作品展示区域
+        </div>
+    </main>
+
+</body>
+</html>
