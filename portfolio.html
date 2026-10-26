@@ -25,11 +25,30 @@
             background: #dddddd;
         }
 
+        #editor-toolbar button {
+            margin: 8px 8px 8px 0;
+        }
+
+        #portfolio-canvas {
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 480px;
+            height: 480px;
+            overflow: hidden;
+            border: 1px solid #94a3b8;
+            background: #f8fafc;
+        }
+
+        #editor-status {
+            min-height: 1.5em;
+        }
+
         body.editing .work {
             outline: 2px dashed #555555;
         }
     </style>
-    <script src="js/portfolio.js" defer></script>
+    <script type="module" src="js/portfolio.js"></script>
 </head>
 
 <body>
@@ -43,14 +62,22 @@
 
     <section id="editor-toolbar" aria-label="编辑工具栏">
         <strong>编辑工具栏</strong>
-        <p>后续将在这里添加图形创建、颜色和属性工具。</p>
+        <div>
+            <button id="add-rect" type="button">添加矩形</button>
+            <button id="add-ellipse" type="button">添加椭圆</button>
+            <button id="move-backward" type="button" disabled>下移一层</button>
+            <button id="move-forward" type="button" disabled>上移一层</button>
+            <button id="delete-selected" type="button" disabled>删除选中对象</button>
+        </div>
+        <p>点击画布中的图形可选中；选中后可使用 Delete 或 Backspace 删除。</p>
+        <p id="editor-status" role="status" aria-live="polite"></p>
     </section>
 
     <main id="portfolio">
         <h2>我的作品</h2>
 
         <div class="work">
-            作品展示区域
+            <div id="portfolio-canvas" aria-label="作品编辑画布"></div>
         </div>
     </main>
 

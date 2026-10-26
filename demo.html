@@ -41,6 +41,8 @@
     <script type="module">
         import { createGrid } from "./js/grid-runtime.js";
         import { toCSSLayout, resolveBreakpoint } from "./js/grid-layout.js";
+        import { buildObjectBindings } from "./js/object-model.js";
+        import { createObjectRenderer } from "./js/object-renderer.js";
 
         const container = document.querySelector("#grid");
         const rectOutput = document.querySelector("#rect-output");
@@ -56,18 +58,18 @@
             {
                 id: "left",
                 parentId: "root",
+                objectId: "left-shape",
                 horizontal: { mode: "ratio", leftRatio: 0.04, rightRatio: 0.53 },
                 vertical: { mode: "ratio", topRatio: 0.08, bottomRatio: 0.08 },
                 children: ["nested-square"],
-                background: "#2563eb"
             },
             {
                 id: "right",
                 parentId: "root",
+                objectId: "right-shape",
                 horizontal: { mode: "ratio", leftRatio: 0.53, rightRatio: 0.04 },
                 vertical: { mode: "ratio", topRatio: 0.08, bottomRatio: 0.08 },
-                children: [],
-                background: "#059669"
+                children: []
             },
             {
                 id: "nested-square",
@@ -75,13 +77,31 @@
                 horizontal: { mode: "ratio", leftRatio: 0.1, rightRatio: 0.1 },
                 vertical: { mode: "topOffset", topOffset: 12, heightRatio: 0.55 },
                 aspectRatio: 1,
-                children: [],
-                background: "#d97706"
+                children: []
             }
         ];
 
+        const objectStore = {
+            version: 1,
+            objects: [
+                {
+                    id: "left-shape",
+                    type: "rect",
+                    appearance: { fill: "#2563eb", stroke: "#1e3a8a", strokeWidth: 3 }
+                },
+                {
+                    id: "right-shape",
+                    type: "ellipse",
+                    appearance: { fill: "#059669", stroke: "#064e3b", strokeWidth: 3 }
+                }
+            ]
+        };
+        const objectBindings = buildObjectBindings(objectStore, nodes);
         const grid = createGrid(container, nodes);
+        const objectRenderer = createObjectRenderer(container);
+        const renderObjects = () => objectRenderer.render(grid.getRects(), objectBindings);
         grid.observe();
+        renderObjects();
 
         function showOutput() {
             rectOutput.textContent = JSON.stringify(grid.getRects(), null, 2);
@@ -97,15 +117,28 @@
         document.querySelector("#preview-mobile").addEventListener("click", () => {
             container.style.width = "375px";
             grid.resize(375, 600);
+            renderObjects();
             showOutput();
         });
         document.querySelector("#preview-container").addEventListener("click", () => {
             container.style.width = originalWidth;
             grid.resize(container.clientWidth, container.clientHeight);
+            renderObjects();
             showOutput();
         });
+        const objectResizeObserver = new ResizeObserver(() => {
+            requestAnimationFrame(() => {
+                renderObjects();
+                showOutput();
+            });
+        });
+        objectResizeObserver.observe(container);
         window.addEventListener("resize", showOutput);
-        window.addEventListener("pagehide", () => grid.destroy(), { once: true });
+        window.addEventListener("pagehide", () => {
+            objectResizeObserver.disconnect();
+            objectRenderer.destroy();
+            grid.destroy();
+        }, { once: true });
         showOutput();
 
         console.log("Breakpoint:", resolveBreakpoint(window.innerWidth, [
