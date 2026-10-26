@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Grid Engine Demo</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 16px;
+            font: 16px/1.5 sans-serif;
+        }
+
+        #grid {
+            width: min(800px, calc(100vw - 32px));
+            height: 600px;
+            border: 1px solid #94a3b8;
+            background: #f1f5f9;
+        }
+
+        pre {
+            max-width: 800px;
+            overflow: auto;
+            padding: 12px;
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>响应式网格布局引擎</h1>
+    <p>调整窗口宽度，或点击按钮预览 375 × 600 布局。</p>
+    <button id="preview-mobile" type="button">预览 375 × 600</button>
+    <button id="preview-container" type="button">恢复容器尺寸</button>
+    <div id="grid"></div>
+    <h2>当前矩形</h2>
+    <pre id="rect-output"></pre>
+    <h2>CSS 映射示例</h2>
+    <pre id="css-output"></pre>
+
+    <script type="module">
+        import { createGrid } from "./js/grid-runtime.js";
+        import { toCSSLayout, resolveBreakpoint } from "./js/grid-layout.js";
+
+        const container = document.querySelector("#grid");
+        const rectOutput = document.querySelector("#rect-output");
+        const cssOutput = document.querySelector("#css-output");
+        const nodes = [
+            {
+                id: "root",
+                parentId: null,
+                horizontal: { mode: "ratio", leftRatio: 0, rightRatio: 0 },
+                vertical: { mode: "ratio", topRatio: 0, bottomRatio: 0 },
+                children: ["left", "right"]
+            },
+            {
+                id: "left",
+                parentId: "root",
+                horizontal: { mode: "ratio", leftRatio: 0.04, rightRatio: 0.53 },
+                vertical: { mode: "ratio", topRatio: 0.08, bottomRatio: 0.08 },
+                children: ["nested-square"],
+                background: "#2563eb"
+            },
+            {
+                id: "right",
+                parentId: "root",
+                horizontal: { mode: "ratio", leftRatio: 0.53, rightRatio: 0.04 },
+                vertical: { mode: "ratio", topRatio: 0.08, bottomRatio: 0.08 },
+                children: [],
+                background: "#059669"
+            },
+            {
+                id: "nested-square",
+                parentId: "left",
+                horizontal: { mode: "ratio", leftRatio: 0.1, rightRatio: 0.1 },
+                vertical: { mode: "topOffset", topOffset: 12, heightRatio: 0.55 },
+                aspectRatio: 1,
+                children: [],
+                background: "#d97706"
+            }
+        ];
+
+        const grid = createGrid(container, nodes);
+        grid.observe();
+
+        function showOutput() {
+            rectOutput.textContent = JSON.stringify(grid.getRects(), null, 2);
+            const parent = grid.getRects().find((rect) => rect.id === "root");
+            cssOutput.textContent = JSON.stringify(
+                toCSSLayout(nodes[1], parent),
+                null,
+                2
+            );
+        }
+
+        const originalWidth = container.style.width;
+        document.querySelector("#preview-mobile").addEventListener("click", () => {
+            container.style.width = "375px";
+            grid.resize(375, 600);
+            showOutput();
+        });
+        document.querySelector("#preview-container").addEventListener("click", () => {
+            container.style.width = originalWidth;
+            grid.resize(container.clientWidth, container.clientHeight);
+            showOutput();
+        });
+        window.addEventListener("resize", showOutput);
+        window.addEventListener("pagehide", () => grid.destroy(), { once: true });
+        showOutput();
+
+        console.log("Breakpoint:", resolveBreakpoint(window.innerWidth, [
+            { name: "compact", minWidth: 0 },
+            { name: "wide", minWidth: 768 }
+        ]));
+    </script>
+</body>
+</html>
